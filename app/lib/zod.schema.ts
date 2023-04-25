@@ -37,4 +37,5 @@ export const ManageProductSchema = z.object({
 		z.number().min(0, 'Price must be greater than 0')
 	),
 	image: z.string().min(1, 'Image is required'),
+	category: z.string().min(1, 'Category is required'),
 })

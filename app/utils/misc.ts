@@ -1,4 +1,4 @@
-import {OrderStatus} from '@prisma/client'
+import {Category, OrderStatus} from '@prisma/client'
 
 export function round(number: number, precision: number) {
 	const d = Math.pow(10, precision)
@@ -35,5 +35,15 @@ export function formatDate(date: Date | string) {
 }
 
 export const statusLookup = {
-	[OrderStatus.READY]: 'Ready',
-}
+	[OrderStatus.PROCESSING]: 'Processing',
+	[OrderStatus.DELIVERED]: 'Delivered',
+	[OrderStatus.CANCELLED]: 'Cancelled',
+	[OrderStatus.RETURNED]: 'Returned',
+} satisfies Record<OrderStatus, string>
+
+export const categoryLookup = {
+	[Category.GENERAL_HEALTH]: 'General Health',
+	[Category.MUSCLE_GAIN]: 'Muscle Gain',
+	[Category.WEIGHT_LOSS]: 'Weight Loss',
+	[Category.WEIGHT_GAIN]: 'Weight Loss',
+} satisfies Record<Category, string>

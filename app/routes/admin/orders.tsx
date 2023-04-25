@@ -1,38 +1,18 @@
-import {PlusIcon} from '@heroicons/react/24/solid'
-import {
-	Badge,
-	Button,
-	clsx,
-	Drawer,
-	NumberInput,
-	Textarea,
-	TextInput,
-} from '@mantine/core'
-import {useDisclosure} from '@mantine/hooks'
+import {Badge, Button} from '@mantine/core'
+import {OrderStatus} from '@prisma/client'
 import type {ActionFunction, LoaderArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useFetcher, useLoaderData} from '@remix-run/react'
-import {ObjectId} from 'bson'
-import * as React from 'react'
-import slugify from 'slugify'
 import {TailwindContainer} from '~/components/TailwindContainer'
+import {cancelOrder} from '~/lib/order.server'
 import {db} from '~/lib/prisma.server'
-import {getAllProducts} from '~/lib/product.server'
 import {requireUser} from '~/lib/session.server'
-import {ManageProductSchema} from '~/lib/zod.schema'
-import {badRequest} from '~/utils/misc.server'
+import type {ManageProductSchema} from '~/lib/zod.schema'
 import type {inferErrors} from '~/utils/validation'
-import {validateAction} from '~/utils/validation'
-
-enum MODE {
-	edit,
-	add,
-}
 
 export const loader = async ({request}: LoaderArgs) => {
 	await requireUser(request)
 
-	const products = await getAllProducts()
 	const orders = await db.order.findMany({
 		include: {
 			products: true,
@@ -42,7 +22,6 @@ export const loader = async ({request}: LoaderArgs) => {
 	})
 
 	return json({
-		products,
 		orders,
 	})
 }
@@ -53,96 +32,54 @@ interface ActionData {
 }
 
 export const action: ActionFunction = async ({request}) => {
-	const {fields, fieldErrors} = await validateAction(
-		request,
-		ManageProductSchema
-	)
+	const formData = await request.formData()
 
-	if (fieldErrors) {
-		return badRequest<ActionData>({success: false, fieldErrors})
+	const intent = formData.get('intent')?.toString()
+
+	if (!intent) {
+		return json({success: false, message: 'Unauthorized'}, {status: 401})
 	}
 
-	const {productId, image, name, price, description, quantity, vendor} = fields
-	const id = new ObjectId()
+	switch (intent) {
+		case 'reject-order': {
+			const orderId = formData.get('orderId')?.toString()
+			if (!orderId) {
+				return json(
+					{success: false, message: 'Invalid order id'},
+					{status: 400}
+				)
+			}
 
-	await db.product.upsert({
-		where: {
-			id: productId || id.toString(),
-		},
-		update: {
-			image,
-			name,
-			price,
-			description,
-			quantity,
-			slug: slugify(name, {lower: true, strict: true}),
-		},
-		create: {
-			name,
-			price,
-			description,
-			slug: slugify(name, {lower: true, strict: true}),
-			image,
-			quantity,
-			vendor,
-		},
-	})
+			return cancelOrder(orderId)
+				.then(() => json({success: true}))
+				.catch(e => json({success: false, message: e.message}, {status: 500}))
+		}
 
-	return json({
-		success: true,
-	})
+		case 'approve-order': {
+			const orderId = formData.get('orderId')?.toString()
+			if (!orderId) {
+				return json(
+					{success: false, message: 'Invalid order id'},
+					{status: 400}
+				)
+			}
+
+			return cancelOrder(orderId)
+				.then(() => json({success: true}))
+				.catch(e => json({success: false, message: e.message}, {status: 500}))
+		}
+
+		default:
+			return json({success: false, message: 'Invalid intent'}, {status: 400})
+	}
 }
 
-export default function ManageProduct() {
+export default function ManageOrders() {
 	const fetcher = useFetcher<ActionData>()
-	const imageUploadFetcher = useFetcher()
-	const {products, orders} = useLoaderData<typeof loader>()
+	const orderFetcher = useFetcher()
+	const {orders} = useLoaderData<typeof loader>()
 
-	const [productToUpdate, setProductToUpdate] = React.useState<
-		typeof products[number] | null
-	>(null)
-	const [imageUrl, setImageUrl] = React.useState<string>()
-	const [mode, setMode] = React.useState<MODE>(MODE.edit)
-	const [isModalOpen, {open: openModal, close: closeModal}] =
-		useDisclosure(false)
 	const isSubmitting = fetcher.state !== 'idle'
-
-	React.useEffect(() => {
-		if (fetcher.state === 'idle') {
-			return
-		}
-
-		if (fetcher.data?.success) {
-			setProductToUpdate(null)
-			setImageUrl(undefined)
-			closeModal()
-		}
-	}, [closeModal, fetcher.data?.success, fetcher.state])
-
-	React.useEffect(() => {
-		if (
-			imageUploadFetcher.state !== 'idle' &&
-			imageUploadFetcher.submission === undefined
-		) {
-			return
-		}
-
-		if (imageUploadFetcher.data?.success) {
-			setImageUrl(imageUploadFetcher.data?.imgSrc)
-		}
-		// handleModal is not meemoized, so we don't need to add it to the dependency array
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [
-		imageUploadFetcher.data?.success,
-		imageUploadFetcher.state,
-		imageUploadFetcher.submission,
-	])
-
-	React.useEffect(() => {
-		if (!productToUpdate) return
-
-		setImageUrl(productToUpdate.image)
-	}, [productToUpdate])
 
 	return (
 		<>
@@ -213,18 +150,56 @@ export default function ManageProduct() {
 												</td>
 
 												<td className="relative space-x-4 whitespace-nowrap py-4 pl-3 pr-4 text-left text-sm font-medium sm:pr-6 md:pr-0">
-													<div className="flex items-center gap-6">
+													<div className="flex items-center gap-2">
 														<Button
 															loading={isSubmitting}
 															variant="subtle"
 															loaderPosition="right"
+															color="green"
+															disabled={
+																order.status === OrderStatus.CANCELLED ||
+																order.status === OrderStatus.RETURNED
+															}
 															onClick={() => {
-																setProductToUpdate(order)
-																setMode(MODE.edit)
-																openModal()
+																orderFetcher.submit(
+																	{
+																		intent: 'approve-order',
+																		orderId: order.id,
+																	},
+																	{
+																		method: 'POST',
+																		replace: true,
+																	}
+																)
 															}}
 														>
-															Edit
+															Approve
+														</Button>
+
+														<Button
+															loading={isSubmitting}
+															variant="subtle"
+															loaderPosition="right"
+															color="red"
+															disabled={
+																order.status === OrderStatus.CANCELLED ||
+																order.status === OrderStatus.RETURNED ||
+																order.status === OrderStatus.DELIVERED
+															}
+															onClick={() => {
+																orderFetcher.submit(
+																	{
+																		intent: 'reject-order',
+																		orderId: order.id,
+																	},
+																	{
+																		method: 'POST',
+																		replace: true,
+																	}
+																)
+															}}
+														>
+															Reject
 														</Button>
 													</div>
 												</td>
@@ -237,105 +212,6 @@ export default function ManageProduct() {
 					</div>
 				</div>
 			</TailwindContainer>
-
-			<Drawer
-				opened={isModalOpen}
-				onClose={() => {
-					setProductToUpdate(null)
-					closeModal()
-				}}
-				title={clsx({
-					'Edit product': mode === MODE.edit,
-					'Add product': mode === MODE.add,
-				})}
-				position="right"
-				overlayBlur={1}
-				overlayOpacity={0.7}
-			>
-				<div className="p-4">
-					<fetcher.Form method="post" replace>
-						<fieldset disabled={isSubmitting} className="flex flex-col gap-4">
-							<input
-								type="hidden"
-								name="productId"
-								value={productToUpdate?.id}
-							/>
-
-							<TextInput
-								name="name"
-								label="Name"
-								defaultValue={productToUpdate?.name}
-								error={fetcher.data?.fieldErrors?.name}
-								required
-							/>
-
-							<TextInput
-								name="vendor"
-								label="Vendor"
-								defaultValue={productToUpdate?.vendor}
-								error={fetcher.data?.fieldErrors?.vendor}
-								required
-							/>
-
-							<Textarea
-								name="description"
-								label="Description"
-								defaultValue={productToUpdate?.description}
-								error={fetcher.data?.fieldErrors?.description}
-								required
-							/>
-
-							<NumberInput
-								name="price"
-								label="Price"
-								min={0}
-								defaultValue={productToUpdate?.price}
-								error={fetcher.data?.fieldErrors?.price}
-								required
-							/>
-
-							<NumberInput
-								name="quantity"
-								label="Quantity"
-								defaultValue={productToUpdate?.quantity}
-								min={1}
-								error={fetcher.data?.fieldErrors?.quantity}
-								required
-							/>
-
-							<TextInput
-								name="image"
-								label="Image"
-								value={imageUrl}
-								onChange={e => setImageUrl(e.target.value)}
-								error={fetcher.data?.fieldErrors?.image}
-								required
-							/>
-
-							<div className="mt-1 flex items-center justify-end gap-4">
-								<Button
-									variant="subtle"
-									disabled={isSubmitting}
-									onClick={() => {
-										setProductToUpdate(null)
-										closeModal()
-									}}
-									color="red"
-								>
-									Cancel
-								</Button>
-								<Button
-									type="submit"
-									loading={isSubmitting}
-									loaderPosition="right"
-								>
-									{mode === MODE.edit ? 'Save changes' : 'Add product'}
-								</Button>
-							</div>
-						</fieldset>
-					</fetcher.Form>
-				</div>
-			</Drawer>
 		</>
 	)
 }

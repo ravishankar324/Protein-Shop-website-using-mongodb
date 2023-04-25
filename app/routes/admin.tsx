@@ -10,7 +10,6 @@ import {
 } from '@mantine/core'
 import type {LoaderArgs, SerializeFrom} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
-import type {ShouldReloadFunction} from '@remix-run/react'
 import {Form, Link, Outlet} from '@remix-run/react'
 import appConfig from 'app.config'
 import {TailwindContainer} from '~/components/TailwindContainer'
@@ -33,7 +32,7 @@ export default function AppLayout() {
 		<>
 			<div className="flex h-full flex-col">
 				<HeaderComponent />
-				<ScrollArea classNames={{root: 'flex-1 bg-gray-100'}}>
+				<ScrollArea classNames={{root: 'flex-1'}}>
 					<main>
 						<Outlet />
 					</main>
@@ -93,6 +92,14 @@ function HeaderComponent() {
 
 									<Menu.Item
 										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
+										component={Link}
+										to="orders"
+									>
+										Orders
+									</Menu.Item>
+
+									<Menu.Item
+										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
 										type="submit"
 										form="logout-form"
 									>
@@ -120,16 +127,4 @@ function FooterComponent() {
 			</span>
 		</Footer>
 	)
-}
-
-export const unstable_shouldReload: ShouldReloadFunction = ({
-	submission,
-	prevUrl,
-	url,
-}) => {
-	if (!submission && prevUrl.pathname === url.pathname) {
-		return false
-	}
-
-	return true
 }

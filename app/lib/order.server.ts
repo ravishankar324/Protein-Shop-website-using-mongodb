@@ -1,12 +1,12 @@
 import type {
 	Order,
+	OrderType,
 	Payment,
 	PaymentMethod,
 	Product,
 	ProductOrder,
 	User,
 } from '@prisma/client'
-import {OrderType} from '@prisma/client'
 import {OrderStatus} from '@prisma/client'
 import type {CartItem} from '~/context/CartContext'
 import {generateSerialNumber} from '~/utils/misc'
@@ -53,10 +53,7 @@ export function createOrder({
 			data: {
 				userId,
 				type: orderType,
-				status:
-					orderType === OrderType.DELIVERY
-						? OrderStatus.DELIVERED
-						: OrderStatus.READY,
+				status: OrderStatus.PROCESSING,
 				pickupDateTime,
 				payment: {
 					create: {
@@ -166,4 +163,64 @@ export async function returnOrder(orderId: Order['id']) {
 			})
 		)
 	)
+}
+
+export async function cancelOrder(orderId: Order['id']) {
+	const order = await db.order.findUnique({
+		where: {
+			id: orderId,
+		},
+		include: {
+			products: {
+				include: {
+					product: true,
+				},
+			},
+		},
+	})
+
+	if (!order) {
+		throw new Error('Order not found')
+	}
+
+	await db.order.update({
+		where: {
+			id: orderId,
+		},
+		data: {
+			status: OrderStatus.CANCELLED,
+		},
+	})
+
+	const products = order.products.map(p => ({
+		id: p.product.id,
+		quantity: p.quantity,
+		baseQuantity: p.product.quantity,
+	}))
+
+	await Promise.all(
+		products.map(p =>
+			db.product.update({
+				where: {
+					id: p.id,
+				},
+				data: {
+					quantity: {
+						increment: p.quantity,
+					},
+				},
+			})
+		)
+	)
+}
+
+export async function approveOrder(orderId: Order['id']) {
+	return await db.order.update({
+		where: {
+			id: orderId,
+		},
+		data: {
+			status: OrderStatus.DELIVERED,
+		},
+	})
 }

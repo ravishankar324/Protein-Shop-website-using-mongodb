@@ -17,7 +17,7 @@ import {cleanNotifications, showNotification} from '@mantine/notifications'
 import {OrderType, PaymentMethod} from '@prisma/client'
 import type {ActionArgs} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
-import {Link, useFetcher, useLocation} from '@remix-run/react'
+import {Link, useFetcher} from '@remix-run/react'
 import * as React from 'react'
 import ReactInputMask from 'react-input-mask'
 import {TailwindContainer} from '~/components/TailwindContainer'
@@ -25,7 +25,7 @@ import type {CartItem} from '~/context/CartContext'
 import {useCart} from '~/context/CartContext'
 import {createOrder} from '~/lib/order.server'
 import {getUserId} from '~/lib/session.server'
-import {useOptionalUser} from '~/utils/hooks'
+import {useUser} from '~/utils/hooks'
 import {titleCase} from '~/utils/misc'
 import {badRequest} from '~/utils/misc.server'
 
@@ -93,11 +93,10 @@ export async function action({request}: ActionArgs) {
 
 export default function Cart() {
 	const id = React.useId()
-	const location = useLocation()
 	const fetcher = useFetcher<ActionData>()
 
 	const {clearCart, itemsInCart, totalPrice} = useCart()
-	const {user} = useOptionalUser()
+	const {user} = useUser()
 
 	const [orderType, setOrderType] = React.useState<OrderType>(OrderType.PICKUP)
 	const [paymentMethod, setPaymentMethod] = React.useState<PaymentMethod>(
@@ -238,25 +237,13 @@ export default function Cart() {
 											Clear cart
 										</Button>
 
-										{user ? (
-											<Button
-												variant="light"
-												loading={isSubmitting}
-												onClick={() => showPaymentModal()}
-											>
-												Make payment
-											</Button>
-										) : (
-											<Button
-												variant="light"
-												component={Link}
-												to={`/login?redirectTo=${encodeURIComponent(
-													location.pathname
-												)}`}
-											>
-												Sign in to order
-											</Button>
-										)}
+										<Button
+											variant="light"
+											loading={isSubmitting}
+											onClick={() => showPaymentModal()}
+										>
+											Make payment
+										</Button>
 									</div>
 								) : null}
 							</div>

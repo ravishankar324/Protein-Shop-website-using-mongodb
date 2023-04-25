@@ -4,10 +4,12 @@ import {
 	clsx,
 	Drawer,
 	NumberInput,
+	Select,
 	Textarea,
 	TextInput,
 } from '@mantine/core'
 import {useDisclosure} from '@mantine/hooks'
+import {Category} from '@prisma/client'
 import type {ActionFunction, LoaderArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useFetcher, useLoaderData} from '@remix-run/react'
@@ -19,6 +21,7 @@ import {db} from '~/lib/prisma.server'
 import {getAllProducts} from '~/lib/product.server'
 import {requireUser} from '~/lib/session.server'
 import {ManageProductSchema} from '~/lib/zod.schema'
+import {categoryLookup} from '~/utils/misc'
 import {badRequest} from '~/utils/misc.server'
 import type {inferErrors} from '~/utils/validation'
 import {validateAction} from '~/utils/validation'
@@ -53,7 +56,16 @@ export const action: ActionFunction = async ({request}) => {
 		return badRequest<ActionData>({success: false, fieldErrors})
 	}
 
-	const {productId, image, name, price, description, quantity, vendor} = fields
+	const {
+		productId,
+		image,
+		name,
+		price,
+		description,
+		quantity,
+		vendor,
+		category,
+	} = fields
 	const id = new ObjectId()
 
 	await db.product.upsert({
@@ -67,6 +79,7 @@ export const action: ActionFunction = async ({request}) => {
 			description,
 			quantity,
 			slug: slugify(name, {lower: true, strict: true}),
+			category: category as Category,
 		},
 		create: {
 			name,
@@ -76,6 +89,7 @@ export const action: ActionFunction = async ({request}) => {
 			image,
 			quantity,
 			vendor,
+			category: category as Category,
 		},
 	})
 
@@ -194,6 +208,12 @@ export default function ManageProduct() {
 											</th>
 											<th
 												scope="col"
+												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+											>
+												Category
+											</th>
+											<th
+												scope="col"
 												className="relative py-3.5 pl-3 pr-4 sm:pr-6 md:pr-0"
 											>
 												<span className="sr-only">Actions</span>
@@ -214,6 +234,9 @@ export default function ManageProduct() {
 												</td>
 												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
 													{product.quantity}
+												</td>
+												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+													{categoryLookup[product.category]}
 												</td>
 
 												<td className="relative space-x-4 whitespace-nowrap py-4 pl-3 pr-4 text-left text-sm font-medium sm:pr-6 md:pr-0">
@@ -304,6 +327,18 @@ export default function ManageProduct() {
 								defaultValue={productToUpdate?.quantity}
 								min={1}
 								error={fetcher.data?.fieldErrors?.quantity}
+								required
+							/>
+
+							<Select
+								name="category"
+								label="Category"
+								defaultValue={productToUpdate?.category}
+								error={fetcher.data?.fieldErrors?.category}
+								data={Object.values(Category).map(category => ({
+									value: category,
+									label: categoryLookup[category],
+								}))}
 								required
 							/>
 

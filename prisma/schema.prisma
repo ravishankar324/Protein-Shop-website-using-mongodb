@@ -95,7 +95,8 @@ enum PaymentMethod {
 enum OrderStatus {
   DELIVERED
   RETURNED
-  READY
+  PROCESSING
+  CANCELLED
 }
 
 enum Role {

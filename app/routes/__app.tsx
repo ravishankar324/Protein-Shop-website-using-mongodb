@@ -16,7 +16,6 @@ import {
 	Indicator,
 	Menu,
 	Modal,
-	NumberInput,
 	ScrollArea,
 	TextInput,
 } from '@mantine/core'
