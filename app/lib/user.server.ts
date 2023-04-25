@@ -7,12 +7,6 @@ import {createPasswordHash} from '~/utils/misc.server'
 export async function getUserById(id: User['id']) {
 	return db.user.findUnique({
 		where: {id},
-		select: {
-			id: true,
-			name: true,
-			email: true,
-			address: true,
-		},
 	})
 }
 

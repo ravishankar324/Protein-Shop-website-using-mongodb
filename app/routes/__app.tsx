@@ -1,110 +1,124 @@
-import {
-	ArrowLeftOnRectangleIcon,
-	ArrowRightOnRectangleIcon,
-	MagnifyingGlassIcon,
-	UserPlusIcon,
-} from '@heroicons/react/24/solid'
-
-import {ShoppingBagIcon, ShoppingCartIcon} from '@heroicons/react/24/outline'
+import {ArrowLeftOnRectangleIcon} from '@heroicons/react/24/solid'
 
 import {
-	ActionIcon,
+	ShoppingBagIcon,
+	ShoppingCartIcon,
+	UserIcon,
+} from '@heroicons/react/24/outline'
+
+import {
 	Anchor,
 	Avatar,
 	Button,
 	Divider,
 	Footer,
-	Group,
 	Header,
 	Indicator,
 	Menu,
+	Modal,
+	NumberInput,
 	ScrollArea,
-	Text,
+	TextInput,
 } from '@mantine/core'
-import type {SpotlightAction} from '@mantine/spotlight'
-import {SpotlightProvider, useSpotlight} from '@mantine/spotlight'
 import type {LoaderArgs, SerializeFrom} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
-import type {ShouldReloadFunction} from '@remix-run/react'
-import {
-	Form,
-	Link,
-	Outlet,
-	useLoaderData,
-	useLocation,
-	useNavigate,
-} from '@remix-run/react'
+import {Form, Link, Outlet, useFetcher, useLoaderData} from '@remix-run/react'
 import appConfig from 'app.config'
 import * as React from 'react'
 import {TailwindContainer} from '~/components/TailwindContainer'
 import {useCart} from '~/context/CartContext'
 import {getAllProducts} from '~/lib/product.server'
 import {isAdmin, isCustomer, requireUser} from '~/lib/session.server'
-import {useOptionalUser} from '~/utils/hooks'
+import {useUser} from '~/utils/hooks'
 
 export type AppLoaderData = SerializeFrom<typeof loader>
 export const loader = async ({request}: LoaderArgs) => {
-	await requireUser(request)
+	const user = await requireUser(request)
 
 	if (await isAdmin(request)) {
 		return redirect('/admin')
 	}
 
 	const products = await getAllProducts()
-	return json({products, isCustomer: await isCustomer(request)})
+	const isBmiSet = user.bmi !== null && user.bmi !== undefined
+
+	return json({products, isCustomer: await isCustomer(request), isBmiSet})
 }
 
 export default function AppLayout() {
-	const navigate = useNavigate()
-	const {products} = useLoaderData<typeof loader>()
+	const {isBmiSet} = useLoaderData<AppLoaderData>()
+	const [showBmiModal, setShowBmiModal] = React.useState(!isBmiSet)
 
-	const [actions] = React.useState<SpotlightAction[]>(() => {
-		const actions = [] as SpotlightAction[]
+	const bmiFetcher = useFetcher()
 
-		products.forEach(product => {
-			actions.push({
-				title: product.name,
-				icon: <Avatar src={product.image} radius="xl" size="sm" />,
-				onTrigger: () => navigate(`/product/${product.slug}`),
-			})
-		})
-
-		return actions
-	})
+	React.useEffect(() => {
+		if (!isBmiSet) {
+			setShowBmiModal(true)
+		} else {
+			setShowBmiModal(false)
+		}
+	}, [isBmiSet])
 
 	return (
 		<>
-			<SpotlightProvider
-				shortcut={['mod + K', '/']}
-				highlightQuery
-				searchPlaceholder="Search for products..."
-				searchIcon={<MagnifyingGlassIcon className="h-5 w-5" />}
-				limit={5}
-				actionsWrapperComponent={ActionsWrapper}
-				nothingFoundMessage={<Text>Nothing found</Text>}
-				actions={actions}
-			>
-				<div className="flex h-full flex-col">
-					<HeaderComponent />
-					<ScrollArea classNames={{root: 'flex-1 bg-gray-100'}}>
-						<main>
-							<Outlet />
-						</main>
-					</ScrollArea>
+			<div className="flex h-full flex-col">
+				<HeaderComponent />
+				<ScrollArea classNames={{root: 'flex-1 bg-white'}}>
+					<main>
+						<Outlet />
+					</main>
+				</ScrollArea>
 
-					<FooterComponent />
-				</div>
-			</SpotlightProvider>
+				<FooterComponent />
+			</div>
+
+			<Modal
+				title="BMI Calculator"
+				opened={showBmiModal}
+				onClose={() => setShowBmiModal(false)}
+				withCloseButton={false}
+				closeOnEscape={false}
+				closeOnClickOutside={false}
+			>
+				<bmiFetcher.Form
+					method="post"
+					className="space-y-4"
+					action="/api/update-bmi"
+					replace
+				>
+					<TextInput
+						label="Height (m)"
+						name="height"
+						type="number"
+						required
+						min={0}
+						step={0.01}
+					/>
+
+					<TextInput
+						label="Weight (kg)"
+						name="weight"
+						type="number"
+						required
+						min={0}
+						step={0.01}
+					/>
+
+					<Button type="submit" fullWidth>
+						Submit
+					</Button>
+				</bmiFetcher.Form>
+			</Modal>
 		</>
 	)
 }
 
 function HeaderComponent() {
-	const spotlight = useSpotlight()
-	const location = useLocation()
-	const {user} = useOptionalUser()
+	const {user} = useUser()
 	const {itemsInCart} = useCart()
-	const {isCustomer} = useLoaderData<typeof loader>()
+	const [showBmiModal, setShowBmiModal] = React.useState(false)
+
+	const bmiFetcher = useFetcher()
 
 	return (
 		<>
@@ -123,21 +137,12 @@ function HeaderComponent() {
 						</div>
 
 						<div className="flex items-center gap-4">
-							<ActionIcon
-								title="Search"
-								size="lg"
-								onClick={() => spotlight.openSpotlight()}
-							>
-								<MagnifyingGlassIcon className="h-5 w-5 text-gray-500" />
-							</ActionIcon>
-
 							<Indicator
-								label={itemsInCart.length}
 								inline
-								size={16}
 								disabled={itemsInCart.length <= 0}
 								color="red"
 								offset={7}
+								size={8}
 							>
 								<Button
 									px={8}
@@ -158,72 +163,90 @@ function HeaderComponent() {
 							>
 								<Menu.Target>
 									<button>
-										{user ? (
-											<Avatar color="blue" size="md">
-												{user.name.charAt(0)}
-											</Avatar>
-										) : (
-											<Avatar />
-										)}
+										<Avatar color="blue" size="md">
+											{user.name.charAt(0)}
+										</Avatar>
 									</button>
 								</Menu.Target>
 
 								<Menu.Dropdown>
-									{user ? (
-										<>
-											<Menu.Item disabled>
-												<div className="flex flex-col">
-													<p>{user.name}</p>
-													<p className="mt-0.5 text-sm">{user.email}</p>
-												</div>
-											</Menu.Item>
-											<Divider />
+									<Menu.Item disabled>
+										<div className="flex flex-col">
+											<p>{user.name}</p>
+											<p className="mt-0.5 text-sm">{user.email}</p>
+										</div>
+									</Menu.Item>
+									<Divider />
 
-											{isCustomer ? (
-												<Menu.Item
-													icon={<ShoppingBagIcon className="h-4 w-4" />}
-													component={Link}
-													to="/order-history"
-												>
-													Your orders
-												</Menu.Item>
-											) : null}
-											<Menu.Item
-												icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
-												type="submit"
-												form="logout-form"
-											>
-												Logout
-											</Menu.Item>
-										</>
-									) : (
-										<>
-											<Menu.Item
-												icon={<ArrowRightOnRectangleIcon className="h-4 w-4" />}
-												component={Link}
-												to={`/login?redirectTo=${encodeURIComponent(
-													location.pathname
-												)}`}
-											>
-												Login
-											</Menu.Item>
-											<Menu.Item
-												icon={<UserPlusIcon className="h-4 w-4" />}
-												component={Link}
-												to={`/register?redirectTo=${encodeURIComponent(
-													location.pathname
-												)}`}
-											>
-												Create account
-											</Menu.Item>
-										</>
-									)}
+									<Menu.Item
+										icon={<UserIcon className="h-4 w-4" />}
+										component="button"
+										onClick={() => setShowBmiModal(true)}
+									>
+										Update BMI
+									</Menu.Item>
+
+									<Menu.Item
+										icon={<ShoppingBagIcon className="h-4 w-4" />}
+										component={Link}
+										to="/order-history"
+									>
+										Your orders
+									</Menu.Item>
+									<Menu.Item
+										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
+										type="submit"
+										form="logout-form"
+									>
+										Logout
+									</Menu.Item>
 								</Menu.Dropdown>
 							</Menu>
 						</div>
 					</div>
 				</TailwindContainer>
 			</Header>
+
+			<Modal
+				title="Update details"
+				opened={showBmiModal}
+				onClose={() => setShowBmiModal(false)}
+			>
+				<bmiFetcher.Form
+					method="post"
+					className="space-y-4"
+					action="/api/update-bmi"
+					replace
+				>
+					<TextInput
+						label="Height (m)"
+						name="height"
+						required
+						type="number"
+						defaultValue={user?.height || ''}
+						min={0}
+						step={0.01}
+					/>
+
+					<TextInput
+						label="Weight (kg)"
+						name="weight"
+						required
+						type="number"
+						defaultValue={user?.weight || ''}
+						min={0}
+						step={0.01}
+					/>
+
+					<Button
+						type="submit"
+						fullWidth
+						onClick={() => setShowBmiModal(false)}
+					>
+						Submit
+					</Button>
+				</bmiFetcher.Form>
+			</Modal>
 		</>
 	)
 }
@@ -240,34 +263,4 @@ function FooterComponent() {
 			</span>
 		</Footer>
 	)
-}
-
-function ActionsWrapper({children}: {children: React.ReactNode}) {
-	return (
-		<div>
-			{children}
-			<Group
-				position="right"
-				px={15}
-				py="xs"
-				className="border-t border-gray-300"
-			>
-				<Text size="xs" color="dimmed">
-					Search powered by {appConfig.name}
-				</Text>
-			</Group>
-		</div>
-	)
-}
-
-export const unstable_shouldReload: ShouldReloadFunction = ({
-	submission,
-	prevUrl,
-	url,
-}) => {
-	if (!submission && prevUrl.pathname === url.pathname) {
-		return false
-	}
-
-	return true
 }
