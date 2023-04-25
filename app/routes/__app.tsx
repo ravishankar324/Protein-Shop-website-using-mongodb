@@ -39,11 +39,13 @@ import * as React from 'react'
 import {TailwindContainer} from '~/components/TailwindContainer'
 import {useCart} from '~/context/CartContext'
 import {getAllProducts} from '~/lib/product.server'
-import {isAdmin, isCustomer} from '~/lib/session.server'
+import {isAdmin, isCustomer, requireUser} from '~/lib/session.server'
 import {useOptionalUser} from '~/utils/hooks'
 
 export type AppLoaderData = SerializeFrom<typeof loader>
 export const loader = async ({request}: LoaderArgs) => {
+	await requireUser(request)
+
 	if (await isAdmin(request)) {
 		return redirect('/admin')
 	}

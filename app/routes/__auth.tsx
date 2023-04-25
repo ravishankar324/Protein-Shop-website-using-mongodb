@@ -1,6 +1,7 @@
 import type {LoaderFunction} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import {Outlet} from '@remix-run/react'
+import appConfig from 'app.config'
 import {getUser} from '~/lib/session.server'
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -23,7 +24,7 @@ export default function AuthLayout() {
 				<div className="relative hidden flex-1 lg:block">
 					<img
 						className="absolute inset-0 h-full w-full object-cover"
-						src="https://images.unsplash.com/photo-1449247666642-264389f5f5b1?auto=format&fit=crop&w=1469&q=80"
+						src={appConfig.banner}
 						alt=""
 					/>
 				</div>

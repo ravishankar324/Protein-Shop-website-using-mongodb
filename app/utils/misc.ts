@@ -1,3 +1,5 @@
+import {OrderStatus} from '@prisma/client'
+
 export function round(number: number, precision: number) {
 	const d = Math.pow(10, precision)
 	return Math.round((number + Number.EPSILON) * d) / d
@@ -30,4 +32,8 @@ export function formatDate(date: Date | string) {
 		hour: 'numeric',
 		minute: 'numeric',
 	}).format(new Date(date))
+}
+
+export const statusLookup = {
+	[OrderStatus.READY]: 'Ready',
 }

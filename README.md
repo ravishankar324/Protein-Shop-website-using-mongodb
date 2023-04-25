@@ -1,4 +1,4 @@
-# EKART APPLICATION
+# Online Protein Shop
 
 ## Commands
 

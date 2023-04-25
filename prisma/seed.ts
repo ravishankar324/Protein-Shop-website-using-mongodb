@@ -38,7 +38,7 @@ async function seed() {
 				slug: slugify(product.name, {lower: true}),
 				quantity: product.quantity,
 				vendor: product.vendor,
-				type: product.type,
+				category: product.type,
 			},
 		})
 	}
@@ -87,7 +87,7 @@ const products = [
 		quantity: 15,
 		price: 69.99,
 		vendor: 'Dymatize',
-		type: 'weight gainer',
+		type: Category.WEIGHT_GAIN,
 	},
 	{
 		name: 'MuscleTech Mass-Tech Extreme 2000 Weight Gainer Protein Powder',
@@ -98,6 +98,6 @@ const products = [
 		quantity: 8,
 		price: 79.99,
 		vendor: 'MuscleTech',
-		type: 'weight gainer',
+		type: Category.WEIGHT_GAIN,
 	},
 ]
