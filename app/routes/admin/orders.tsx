@@ -4,7 +4,7 @@ import type {ActionFunction, LoaderArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useFetcher, useLoaderData} from '@remix-run/react'
 import {TailwindContainer} from '~/components/TailwindContainer'
-import {cancelOrder} from '~/lib/order.server'
+import {approveOrder, cancelOrder} from '~/lib/order.server'
 import {db} from '~/lib/prisma.server'
 import {requireUser} from '~/lib/session.server'
 import type {ManageProductSchema} from '~/lib/zod.schema'
@@ -64,7 +64,7 @@ export const action: ActionFunction = async ({request}) => {
 				)
 			}
 
-			return cancelOrder(orderId)
+			return approveOrder(orderId)
 				.then(() => json({success: true}))
 				.catch(e => json({success: false, message: e.message}, {status: 500}))
 		}
@@ -96,7 +96,7 @@ export default function ManageOrders() {
 						</div>
 					</div>
 					<div className="mt-8 flex flex-col">
-						<div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+						<div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
 							<div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
 								<table className="min-w-full divide-y divide-gray-300">
 									<thead>
@@ -115,13 +115,13 @@ export default function ManageOrders() {
 											</th>
 											<th
 												scope="col"
-												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+												className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
 											>
 												Price
 											</th>
 											<th
 												scope="col"
-												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+												className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
 											>
 												Status
 											</th>
@@ -142,10 +142,10 @@ export default function ManageOrders() {
 												<td className="whitespace-nowrap py-4 text-sm text-gray-500">
 													{order.payment?.paymentMethod}
 												</td>
-												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													${order.payment?.amount}
 												</td>
-												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													<Badge>{order.status}</Badge>
 												</td>
 
