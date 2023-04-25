@@ -45,5 +45,5 @@ export const categoryLookup = {
 	[Category.GENERAL_HEALTH]: 'General Health',
 	[Category.MUSCLE_GAIN]: 'Muscle Gain',
 	[Category.WEIGHT_LOSS]: 'Weight Loss',
-	[Category.WEIGHT_GAIN]: 'Weight Loss',
+	[Category.WEIGHT_GAIN]: 'Weight Gain',
 } satisfies Record<Category, string>

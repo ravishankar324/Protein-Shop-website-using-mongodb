@@ -14,6 +14,9 @@ export const loader = async ({request}: LoaderArgs) => {
 	await requireUser(request)
 
 	const orders = await db.order.findMany({
+		orderBy: {
+			createdAt: 'desc',
+		},
 		include: {
 			products: true,
 			payment: true,
@@ -105,13 +108,19 @@ export default function ManageOrders() {
 												scope="col"
 												className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 md:pl-0"
 											>
+												Id
+											</th>
+											<th
+												scope="col"
+												className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 md:pl-0"
+											>
 												Name
 											</th>
 											<th
 												scope="col"
 												className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 md:pl-0"
 											>
-												Payment Method
+												Orderer At
 											</th>
 											<th
 												scope="col"
@@ -140,13 +149,28 @@ export default function ManageOrders() {
 													{order.id}
 												</td>
 												<td className="whitespace-nowrap py-4 text-sm text-gray-500">
-													{order.payment?.paymentMethod}
+													<p className="font-bold">{order.user.name}</p>
+													<p>{order.user.email}</p>
+												</td>
+												<td className="whitespace-nowrap py-4 text-sm text-gray-500">
+													{new Date(order.createdAt).toLocaleString()}
 												</td>
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													${order.payment?.amount}
 												</td>
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-													<Badge>{order.status}</Badge>
+													<Badge
+														color={
+															order.status === OrderStatus.CANCELLED ||
+															order.status === OrderStatus.RETURNED
+																? 'red'
+																: order.status === OrderStatus.PROCESSING
+																? 'blue'
+																: 'green'
+														}
+													>
+														{order.status}
+													</Badge>
 												</td>
 
 												<td className="relative space-x-4 whitespace-nowrap py-4 pl-3 pr-4 text-left text-sm font-medium sm:pr-6 md:pr-0">
@@ -158,7 +182,8 @@ export default function ManageOrders() {
 															color="green"
 															disabled={
 																order.status === OrderStatus.CANCELLED ||
-																order.status === OrderStatus.RETURNED
+																order.status === OrderStatus.RETURNED ||
+																order.status === OrderStatus.DELIVERED
 															}
 															onClick={() => {
 																orderFetcher.submit(
