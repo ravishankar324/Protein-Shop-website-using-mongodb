@@ -1,20 +1,7 @@
-import {ArrowLeftOnRectangleIcon} from '@heroicons/react/24/solid'
-
-import {
-	ShoppingBagIcon,
-	ShoppingCartIcon,
-	UserIcon,
-} from '@heroicons/react/24/outline'
-
 import {
 	Anchor,
-	Avatar,
 	Button,
-	Divider,
-	Footer,
-	Header,
 	Indicator,
-	Menu,
 	Modal,
 	ScrollArea,
 	TextInput,
@@ -60,15 +47,13 @@ export default function AppLayout() {
 
 	return (
 		<>
-			<div className="flex h-full flex-col">
+			<div className="flex h-full flex-col bg-gray-100">
 				<HeaderComponent />
-				<ScrollArea classNames={{root: 'flex-1 bg-white'}}>
+				<ScrollArea classNames={{root: 'flex-1'}}>
 					<main>
 						<Outlet />
 					</main>
 				</ScrollArea>
-
-				<FooterComponent />
 			</div>
 
 			<Modal
@@ -122,89 +107,53 @@ function HeaderComponent() {
 	return (
 		<>
 			<Form replace action="/api/auth/logout" method="post" id="logout-form" />
-			<Header height={80} p="md">
-				<TailwindContainer>
-					<div className="flex h-full w-full items-center justify-between">
-						<div className="flex flex-shrink-0 items-center gap-4">
-							<Anchor component={Link} to="/">
-								<img
-									className="h-12 object-cover object-center"
-									src={appConfig.logo}
-									alt="Logo"
-								/>
-							</Anchor>
-						</div>
+			<header className="flex h-14 items-center bg-gray-800">
+				<TailwindContainer className="flex h-full w-full items-center justify-between px-10">
+					<div className="flex flex-shrink-0 items-center gap-4">
+						<Anchor component={Link} to="/">
+							<img
+								className="h-8 object-cover object-center"
+								src={appConfig.logo}
+								alt="Logo"
+							/>
+						</Anchor>
+					</div>
 
-						<div className="flex items-center gap-4">
-							<Indicator
-								inline
-								disabled={itemsInCart.length <= 0}
-								color="red"
-								offset={7}
-								size={8}
+					<div className="flex items-center gap-4">
+						<Indicator inline disabled={itemsInCart.length <= 0} color="red">
+							<Button
+								component={Link}
+								variant="light"
+								compact
+								to="/cart"
+								title="Cart"
 							>
-								<Button
-									px={8}
-									component={Link}
-									variant="subtle"
-									to="/cart"
-									title="Cart"
-									color="gray"
-								>
-									<ShoppingCartIcon className="h-5 w-5 text-gray-500" />
-								</Button>
-							</Indicator>
+								Cart
+							</Button>
+						</Indicator>
 
-							<Menu
-								position="bottom-start"
-								withArrow
-								transition="pop-top-right"
-							>
-								<Menu.Target>
-									<button>
-										<Avatar color="blue" size="md">
-											{user.name.charAt(0)}
-										</Avatar>
-									</button>
-								</Menu.Target>
+						<Button
+							variant="light"
+							compact
+							onClick={() => setShowBmiModal(true)}
+						>
+							Update BMI
+						</Button>
 
-								<Menu.Dropdown>
-									<Menu.Item disabled>
-										<div className="flex flex-col">
-											<p>{user.name}</p>
-											<p className="mt-0.5 text-sm">{user.email}</p>
-										</div>
-									</Menu.Item>
-									<Divider />
-
-									<Menu.Item
-										icon={<UserIcon className="h-4 w-4" />}
-										component="button"
-										onClick={() => setShowBmiModal(true)}
-									>
-										Update BMI
-									</Menu.Item>
-
-									<Menu.Item
-										icon={<ShoppingBagIcon className="h-4 w-4" />}
-										component={Link}
-										to="/order-history"
-									>
-										Your orders
-									</Menu.Item>
-									<Menu.Item
-										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
-										type="submit"
-										form="logout-form"
-									>
-										Logout
-									</Menu.Item>
-								</Menu.Dropdown>
-							</Menu>
-						</div>
+						<Button
+							variant="light"
+							compact
+							component={Link}
+							to="/order-history"
+						>
+							Your orders
+						</Button>
+						<Button variant="light" compact type="submit" form="logout-form">
+							Logout
+						</Button>
 					</div>
 				</TailwindContainer>
-			</Header>
+			</header>
 
 			<Modal
 				title="Update details"
@@ -247,19 +196,5 @@ function HeaderComponent() {
 				</bmiFetcher.Form>
 			</Modal>
 		</>
-	)
-}
-
-function FooterComponent() {
-	return (
-		<Footer
-			height={44}
-			p="md"
-			className="flex items-center justify-center py-1 text-center text-sm"
-		>
-			<span className="text-gray-400">
-				©{new Date().getFullYear()} {appConfig.name}, Inc. All rights reserved.
-			</span>
-		</Footer>
 	)
 }

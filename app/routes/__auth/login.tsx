@@ -1,11 +1,4 @@
-import {
-	Anchor,
-	Button,
-	Group,
-	PasswordInput,
-	Switch,
-	TextInput,
-} from '@mantine/core'
+import {Anchor, Button, PasswordInput, TextInput} from '@mantine/core'
 import type {ActionFunction} from '@remix-run/node'
 import {Link, useFetcher, useSearchParams} from '@remix-run/react'
 import {createUserSession} from '~/lib/session.server'
@@ -26,7 +19,7 @@ export const action: ActionFunction = async ({request}) => {
 		return badRequest<ActionData>({fieldErrors})
 	}
 
-	const {email, password, redirectTo, remember} = fields
+	const {email, password, redirectTo} = fields
 
 	const user = await verifyLogin(email, password)
 	if (!user) {
@@ -41,7 +34,6 @@ export const action: ActionFunction = async ({request}) => {
 		request,
 		userId: user.id,
 		role: user.role,
-		remember: remember === 'on' ? true : false,
 		redirectTo: safeRedirect(redirectTo),
 	})
 }
@@ -87,19 +79,6 @@ export default function Login() {
 						autoComplete="current-password"
 						required
 					/>
-
-					<Group position="apart" mt="1rem">
-						<Switch id="remember-me" name="rememberMe" label="Remember me" />
-
-						{/* <Anchor
-              component={Link}
-              to='/forgot-password'
-              size='sm'
-              prefetch='intent'
-            >
-              Forgot password?
-            </Anchor> */}
-					</Group>
 
 					<Button
 						type="submit"

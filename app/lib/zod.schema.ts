@@ -7,7 +7,6 @@ const password = z.string().min(8, 'Password must be at least 8 characters')
 export const LoginSchema = z.object({
 	email,
 	password,
-	remember: z.enum(['on']).optional(),
 	redirectTo: z.string().default('/'),
 })
 

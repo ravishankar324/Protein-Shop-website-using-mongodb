@@ -1,20 +1,10 @@
-import {ArrowLeftOnRectangleIcon} from '@heroicons/react/24/solid'
-import {
-	Anchor,
-	Avatar,
-	Divider,
-	Footer,
-	Header,
-	Menu,
-	ScrollArea,
-} from '@mantine/core'
+import {Anchor, Button, Footer, ScrollArea} from '@mantine/core'
 import type {LoaderArgs, SerializeFrom} from '@remix-run/node'
 import {json, redirect} from '@remix-run/node'
 import {Form, Link, Outlet} from '@remix-run/react'
 import appConfig from 'app.config'
 import {TailwindContainer} from '~/components/TailwindContainer'
 import {isCustomer, requireUser} from '~/lib/session.server'
-import {useUser} from '~/utils/hooks'
 
 export type AppLoaderData = SerializeFrom<typeof loader>
 export const loader = async ({request}: LoaderArgs) => {
@@ -45,72 +35,31 @@ export default function AppLayout() {
 }
 
 function HeaderComponent() {
-	const {user} = useUser()
-
 	return (
 		<>
 			<Form replace action="/api/auth/logout" method="post" id="logout-form" />
-			<Header height={80} p="md">
-				<TailwindContainer>
-					<div className="flex h-full w-full items-center justify-between">
-						<div className="flex flex-shrink-0 items-center gap-4">
-							<Anchor component={Link} to="/">
-								<img
-									className="h-12 object-cover object-center"
-									src={appConfig.logo}
-									alt="Logo"
-								/>
-							</Anchor>
-						</div>
+			<header className="flex h-14 items-center bg-gray-800">
+				<TailwindContainer className="flex h-full w-full items-center justify-between px-10">
+					<div className="flex flex-shrink-0 items-center gap-4">
+						<Anchor component={Link} to="/">
+							<img
+								className="h-8 object-cover object-center"
+								src={appConfig.logo}
+								alt="Logo"
+							/>
+						</Anchor>
+					</div>
 
-						<div className="flex items-center gap-4">
-							<Menu
-								position="bottom-start"
-								withArrow
-								transition="pop-top-right"
-							>
-								<Menu.Target>
-									<button>
-										{user ? (
-											<Avatar color="blue" size="md">
-												{user.name.charAt(0)}
-											</Avatar>
-										) : (
-											<Avatar />
-										)}
-									</button>
-								</Menu.Target>
-
-								<Menu.Dropdown>
-									<Menu.Item disabled>
-										<div className="flex flex-col">
-											<p>{user.name}</p>
-											<p className="mt-0.5 text-sm">{user.email}</p>
-										</div>
-									</Menu.Item>
-									<Divider />
-
-									<Menu.Item
-										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
-										component={Link}
-										to="orders"
-									>
-										Orders
-									</Menu.Item>
-
-									<Menu.Item
-										icon={<ArrowLeftOnRectangleIcon className="h-4 w-4" />}
-										type="submit"
-										form="logout-form"
-									>
-										Logout
-									</Menu.Item>
-								</Menu.Dropdown>
-							</Menu>
-						</div>
+					<div className="flex items-center gap-4">
+						<Button variant="light" compact component={Link} to="orders">
+							Orders
+						</Button>
+						<Button variant="light" compact type="submit" form="logout-form">
+							Logout
+						</Button>
 					</div>
 				</TailwindContainer>
-			</Header>
+			</header>
 		</>
 	)
 }

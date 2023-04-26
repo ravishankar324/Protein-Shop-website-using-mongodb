@@ -213,9 +213,9 @@ export default function Cart() {
 	return (
 		<>
 			<div className="flex flex-col gap-4 p-4">
-				<div className="bg-white">
+				<div>
 					<TailwindContainer>
-						<div className="sm:px-4py-16 py-16 px-4 sm:py-20">
+						<div className="py-8 sm:px-4">
 							<div className="flex items-center justify-between">
 								<div>
 									<h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
@@ -265,9 +265,7 @@ export default function Cart() {
 				onClose={closePaymentModal}
 				title={<span className="mt-4 px-10">Payment</span>}
 				position="right"
-				overlayBlur={1}
 				size="auto"
-				overlayOpacity={0.7}
 			>
 				<div className="flex flex-col gap-4 px-6">
 					<div className="flex flex-col gap-2">

@@ -177,7 +177,7 @@ export default function ManageProduct() {
 						</div>
 					</div>
 					<div className="mt-8 flex flex-col">
-						<div className="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+						<div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
 							<div className="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
 								<table className="min-w-full divide-y divide-gray-300">
 									<thead>
@@ -196,19 +196,19 @@ export default function ManageProduct() {
 											</th>
 											<th
 												scope="col"
-												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+												className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
 											>
 												Price
 											</th>
 											<th
 												scope="col"
-												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+												className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
 											>
 												Quantity
 											</th>
 											<th
 												scope="col"
-												className="hidden py-3.5 px-3 text-left text-sm font-semibold text-gray-900 sm:table-cell"
+												className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell"
 											>
 												Category
 											</th>
@@ -229,13 +229,13 @@ export default function ManageProduct() {
 												<td className="whitespace-nowrap py-4 text-sm text-gray-500">
 													{product.vendor}
 												</td>
-												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													${product.price.toFixed(2)}
 												</td>
-												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													{product.quantity}
 												</td>
-												<td className="whitespace-nowrap py-4 px-3 text-sm text-gray-500">
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													{categoryLookup[product.category]}
 												</td>
 
@@ -276,8 +276,6 @@ export default function ManageProduct() {
 					'Add product': mode === MODE.add,
 				})}
 				position="right"
-				overlayBlur={1}
-				overlayOpacity={0.7}
 			>
 				<div className="p-4">
 					<fetcher.Form method="post" replace>

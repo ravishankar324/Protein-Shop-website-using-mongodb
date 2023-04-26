@@ -87,9 +87,9 @@ export default function OrderHistory() {
 	return (
 		<>
 			<div className="flex flex-col gap-4 p-4">
-				<div className="bg-white">
+				<div className="">
 					<TailwindContainer>
-						<div className="px-4 pb-16 pt-12 sm:px-4 sm:pb-20">
+						<div className="py-8 sm:px-4">
 							<div className="max-w-xl">
 								<h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
 									Order history

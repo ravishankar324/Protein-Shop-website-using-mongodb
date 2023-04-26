@@ -48,7 +48,13 @@ export function Document({
 	children: React.ReactNode
 }) {
 	return (
-		<MantineProvider withNormalizeCSS emotionCache={appendCache}>
+		<MantineProvider
+			withNormalizeCSS
+			emotionCache={appendCache}
+			theme={{
+				primaryColor: 'dark',
+			}}
+		>
 			<html lang="en" className="h-full">
 				<head>
 					{title ? <title>{title}</title> : null}
