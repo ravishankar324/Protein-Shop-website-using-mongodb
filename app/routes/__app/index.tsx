@@ -109,7 +109,7 @@ export default function Dashboard() {
 								</h2>
 
 								<div className="-mx-px mt-4 grid grid-cols-2 border-l border-gray-200 sm:mx-0 md:grid-cols-3 lg:grid-cols-4">
-									{recommendedProducts.map(product => (
+									{generalProducts.map(product => (
 										<div
 											key={product.id}
 											className="group relative border-b border-r border-gray-200 p-4 sm:p-6"
