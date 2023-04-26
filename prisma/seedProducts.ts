@@ -1,63 +1,6 @@
-import {Category, PrismaClient, Role} from '@prisma/client'
-import slugify from 'slugify'
-import {createPasswordHash} from '~/utils/misc.server'
+import {Category} from '@prisma/client'
 
-const db = new PrismaClient()
-
-async function seed() {
-	await db.user.deleteMany()
-	await db.product.deleteMany()
-	await db.productOrder.deleteMany()
-	await db.order.deleteMany()
-	await db.payment.deleteMany()
-
-	await db.user.create({
-		data: {
-			name: 'John Doe',
-			email: 'user@app.com',
-			password: await createPasswordHash('password'),
-			role: Role.CUSTOMER,
-			address: '123 Main St',
-		},
-	})
-
-	await db.user.create({
-		data: {
-			name: 'Roxanna',
-			email: 'admin@app.com',
-			password: await createPasswordHash('password'),
-			role: Role.ADMIN,
-		},
-	})
-
-	for (const product of products) {
-		await db.product.create({
-			data: {
-				name: product.name,
-				description: product.description,
-				price: product.price,
-				image: product.image,
-				slug: slugify(product.name, {lower: true}),
-				quantity: product.quantity,
-				vendor: product.vendor,
-				category: product.type,
-			},
-		})
-	}
-
-	console.log(`Database has been seeded. 🌱`)
-}
-
-seed()
-	.catch(e => {
-		console.error(e)
-		process.exit(1)
-	})
-	.finally(async () => {
-		await db.$disconnect()
-	})
-
-const products = [
+export const products = [
 	{
 		name: 'Whey Protein Powder Isolate',
 		description:
@@ -112,5 +55,49 @@ const products = [
 		price: 79.99,
 		vendor: 'MuscleTech',
 		type: Category.GENERAL_HEALTH,
+	},
+	{
+		name: 'Vegan Protein Powder Blend',
+		description:
+			'25g of plant-based protein per serving, with a mix of pea, rice, and hemp protein to support muscle growth and maintenance',
+		image:
+			'https://images.unsplash.com/photo-1622484212839-2425bcf558f3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=764&q=80',
+		quantity: 12,
+		price: 44.99,
+		vendor: 'Vega',
+		type: Category.MUSCLE_GAIN,
+	},
+	{
+		name: 'Whey Protein Hydrolysate Powder',
+		description:
+			'28g of hydrolyzed whey protein per serving for rapid absorption and muscle recovery',
+		image:
+			'https://images.unsplash.com/photo-1595002754613-a457cea51c3d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+		quantity: 20,
+		price: 54.99,
+		vendor: 'Optimum Nutrition',
+		type: Category.GENERAL_HEALTH,
+	},
+	{
+		name: 'Protein Bars Variety Pack',
+		description:
+			'Mixed pack of 12 delicious protein bars with 20g of protein per bar, perfect for on-the-go nutrition',
+		image:
+			'https://images.unsplash.com/photo-1621057621391-7ed446a24b41?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1114&q=80',
+		quantity: 30,
+		price: 24.99,
+		vendor: 'Quest Nutrition',
+		type: Category.WEIGHT_LOSS,
+	},
+	{
+		name: 'BCAA Amino Acids Supplement',
+		description:
+			'Supports muscle recovery and endurance with a 2:1:1 ratio of leucine, isoleucine, and valine',
+		image:
+			'https://images.unsplash.com/photo-1566408669374-5a6d5dca1ef5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+		quantity: 25,
+		price: 29.99,
+		vendor: 'Scivation',
+		type: Category.MUSCLE_GAIN,
 	},
 ]
