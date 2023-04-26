@@ -36,7 +36,7 @@ export default function Item() {
 		<>
 			<div className="flex flex-col gap-4 p-4">
 				<div className="bg-white">
-					<div className="mx-auto max-w-2xl py-16 px-4 sm:py-24 sm:px-6 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-12 lg:px-8">
+					<div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:grid lg:max-w-7xl lg:grid-cols-2 lg:gap-x-12 lg:px-8">
 						{/* Cuisine image */}
 						<div className="sm:mt-10 lg:row-span-2 lg:mt-0 lg:self-center">
 							<div className="overflow-hidden rounded-lg shadow">
@@ -57,7 +57,7 @@ export default function Item() {
 
 							<section aria-labelledby="information-heading" className="mt-4">
 								<h2 id="information-heading" className="sr-only">
-									Cuisine information
+									Item information
 								</h2>
 
 								<p className="text-lg text-gray-900 sm:text-xl">
@@ -85,6 +85,7 @@ export default function Item() {
 										required
 										label="Quantity"
 										value={quantity}
+										description={`Quantity available: ${product.quantity}`}
 										max={product.quantity}
 										onChange={val => setQuantity(Number(val))}
 										min={1}

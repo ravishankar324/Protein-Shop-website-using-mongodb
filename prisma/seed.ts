@@ -8,6 +8,8 @@ async function seed() {
 	await db.user.deleteMany()
 	await db.product.deleteMany()
 	await db.productOrder.deleteMany()
+	await db.order.deleteMany()
+	await db.payment.deleteMany()
 
 	await db.user.create({
 		data: {
@@ -101,7 +103,7 @@ const products = [
 		type: Category.WEIGHT_GAIN,
 	},
 	{
-		name: 'MuscleTech Mass-Tech Extreme 2000 Weight Gainer Protein Powder',
+		name: 'Weight Gainer Protein Powder',
 		description:
 			'80g of protein and 400g of carbohydrates per serving to support weight gain',
 		image:

@@ -15,7 +15,7 @@ import {TailwindContainer} from '~/components/TailwindContainer'
 import {useCart} from '~/context/CartContext'
 import {returnOrder, getOrders, cancelOrder} from '~/lib/order.server'
 import {requireUserId} from '~/lib/session.server'
-import {formatDate, titleCase} from '~/utils/misc'
+import {formatDate, statusLookup, titleCase} from '~/utils/misc'
 
 const dateFormatter = new Intl.DateTimeFormat('en-US')
 
@@ -89,7 +89,7 @@ export default function OrderHistory() {
 			<div className="flex flex-col gap-4 p-4">
 				<div className="bg-white">
 					<TailwindContainer>
-						<div className="px-4 pt-12 pb-16 sm:px-4 sm:pb-20">
+						<div className="px-4 pb-16 pt-12 sm:px-4 sm:pb-20">
 							<div className="max-w-xl">
 								<h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
 									Order history
@@ -139,7 +139,7 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 
 			<div
 				className={clsx(
-					'rounded-lg bg-gray-50 py-6 px-4 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:px-6 lg:gap-8'
+					'rounded-lg bg-gray-50 px-4 py-6 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:px-6 lg:gap-8'
 				)}
 			>
 				<dl className="flex-auto space-y-6 divide-y divide-gray-200 text-sm text-gray-600  sm:flex sm:items-center sm:gap-6 sm:space-y-0 sm:divide-y-0 lg:flex-none lg:gap-16">
@@ -188,7 +188,7 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 										: 'green'
 								}
 							>
-								{titleCase(order.status)}
+								{statusLookup[order.status]}
 							</Badge>
 						</dd>
 					</div>

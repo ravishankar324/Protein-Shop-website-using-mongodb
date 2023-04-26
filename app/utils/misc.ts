@@ -39,6 +39,7 @@ export const statusLookup = {
 	[OrderStatus.DELIVERED]: 'Delivered',
 	[OrderStatus.CANCELLED]: 'Cancelled',
 	[OrderStatus.RETURNED]: 'Returned',
+	[OrderStatus.ORDER_PLACED]: 'Order Placed',
 } satisfies Record<OrderStatus, string>
 
 export const categoryLookup = {

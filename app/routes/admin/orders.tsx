@@ -4,10 +4,11 @@ import type {ActionFunction, LoaderArgs} from '@remix-run/node'
 import {json} from '@remix-run/node'
 import {useFetcher, useLoaderData} from '@remix-run/react'
 import {TailwindContainer} from '~/components/TailwindContainer'
-import {approveOrder, cancelOrder} from '~/lib/order.server'
+import {approveOrder, cancelOrder, completeOrder} from '~/lib/order.server'
 import {db} from '~/lib/prisma.server'
 import {requireUser} from '~/lib/session.server'
 import type {ManageProductSchema} from '~/lib/zod.schema'
+import {statusLookup} from '~/utils/misc'
 import type {inferErrors} from '~/utils/validation'
 
 export const loader = async ({request}: LoaderArgs) => {
@@ -68,6 +69,20 @@ export const action: ActionFunction = async ({request}) => {
 			}
 
 			return approveOrder(orderId)
+				.then(() => json({success: true}))
+				.catch(e => json({success: false, message: e.message}, {status: 500}))
+		}
+
+		case 'complete-order': {
+			const orderId = formData.get('orderId')?.toString()
+			if (!orderId) {
+				return json(
+					{success: false, message: 'Invalid order id'},
+					{status: 400}
+				)
+			}
+
+			return completeOrder(orderId)
 				.then(() => json({success: true}))
 				.catch(e => json({success: false, message: e.message}, {status: 500}))
 		}
@@ -169,7 +184,7 @@ export default function ManageOrders() {
 																: 'green'
 														}
 													>
-														{order.status}
+														{statusLookup[order.status]}
 													</Badge>
 												</td>
 
@@ -177,13 +192,43 @@ export default function ManageOrders() {
 													<div className="flex items-center gap-2">
 														<Button
 															loading={isSubmitting}
-															variant="subtle"
+															variant="filled"
 															loaderPosition="right"
 															color="green"
+															compact
 															disabled={
 																order.status === OrderStatus.CANCELLED ||
 																order.status === OrderStatus.RETURNED ||
-																order.status === OrderStatus.DELIVERED
+																order.status === OrderStatus.DELIVERED ||
+																order.status !== OrderStatus.ORDER_PLACED
+															}
+															onClick={() => {
+																orderFetcher.submit(
+																	{
+																		intent: 'complete-order',
+																		orderId: order.id,
+																	},
+																	{
+																		method: 'POST',
+																		replace: true,
+																	}
+																)
+															}}
+														>
+															Complete
+														</Button>
+
+														<Button
+															loading={isSubmitting}
+															variant="filled"
+															loaderPosition="right"
+															color="blue"
+															compact
+															disabled={
+																order.status === OrderStatus.CANCELLED ||
+																order.status === OrderStatus.RETURNED ||
+																order.status === OrderStatus.DELIVERED ||
+																order.status === OrderStatus.ORDER_PLACED
 															}
 															onClick={() => {
 																orderFetcher.submit(
@@ -203,9 +248,10 @@ export default function ManageOrders() {
 
 														<Button
 															loading={isSubmitting}
-															variant="subtle"
+															variant="filled"
 															loaderPosition="right"
 															color="red"
+															compact
 															disabled={
 																order.status === OrderStatus.CANCELLED ||
 																order.status === OrderStatus.RETURNED ||

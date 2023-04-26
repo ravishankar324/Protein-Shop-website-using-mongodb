@@ -96,6 +96,7 @@ enum OrderStatus {
   DELIVERED
   RETURNED
   PROCESSING
+  ORDER_PLACED
   CANCELLED
 }
 

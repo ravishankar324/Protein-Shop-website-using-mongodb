@@ -220,6 +220,17 @@ export async function approveOrder(orderId: Order['id']) {
 			id: orderId,
 		},
 		data: {
+			status: OrderStatus.ORDER_PLACED,
+		},
+	})
+}
+
+export async function completeOrder(orderId: Order['id']) {
+	return await db.order.update({
+		where: {
+			id: orderId,
+		},
+		data: {
 			status: OrderStatus.DELIVERED,
 		},
 	})
