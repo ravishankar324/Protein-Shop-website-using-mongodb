@@ -249,8 +249,6 @@ export default function Cart() {
 							</div>
 
 							<div className="mt-16">
-								<h2 className="sr-only">Current ice-creams in cart</h2>
-
 								<div className="flex flex-col gap-12">
 									{itemsInCart.length > 0 ? <CartItems /> : <EmptyState />}
 								</div>
@@ -486,7 +484,7 @@ function CartItems() {
 
 						<td className="hidden py-6 pr-8 sm:table-cell" />
 						<td className="hidden py-6 pr-8 font-semibold sm:table-cell">
-							<span>${totalPrice.toFixed(2)}</span>
+							Total: <b>${totalPrice.toFixed(2)}</b>
 						</td>
 					</tr>
 				</tbody>
