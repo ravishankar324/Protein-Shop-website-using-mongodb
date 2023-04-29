@@ -42,6 +42,14 @@ export const statusLookup = {
 	[OrderStatus.ORDER_PLACED]: 'Order Placed',
 } satisfies Record<OrderStatus, string>
 
+export const statusColorLookup = {
+	[OrderStatus.PROCESSING]: 'orange',
+	[OrderStatus.DELIVERED]: 'green',
+	[OrderStatus.CANCELLED]: 'red',
+	[OrderStatus.RETURNED]: 'red',
+	[OrderStatus.ORDER_PLACED]: 'blue',
+} satisfies Record<OrderStatus, string>
+
 export const categoryLookup = {
 	[Category.GENERAL_HEALTH]: 'General Health',
 	[Category.MUSCLE_GAIN]: 'Muscle Gain',

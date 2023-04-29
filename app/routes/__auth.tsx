@@ -16,7 +16,7 @@ export default function AuthLayout() {
 		<>
 			<div className="grid min-h-full grid-cols-12">
 				<div className="col-span-4 flex flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-10 xl:px-12">
-					<div className="mx-auto w-full max-w-sm lg:w-96">
+					<div className="mx-auto w-full max-w-sm">
 						<Outlet />
 					</div>
 				</div>

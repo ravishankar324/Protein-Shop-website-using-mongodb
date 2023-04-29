@@ -76,6 +76,7 @@ export function createOrder({
 			quantity: number
 			serialNo: ProductOrder['serialNo']
 			amount: Product['price']
+			status: ProductOrder['status']
 		}> = []
 		products.forEach(p => {
 			for (let i = 0; i < p.quantity; i++) {
@@ -85,6 +86,7 @@ export function createOrder({
 					quantity: 1,
 					serialNo: generateSerialNumber(),
 					amount: p.basePrice,
+					status: OrderStatus.PROCESSING,
 				})
 			}
 		})
@@ -140,6 +142,16 @@ export async function returnOrder(orderId: Order['id']) {
 		},
 		data: {
 			status: OrderStatus.RETURNED,
+			products: {
+				updateMany: {
+					where: {
+						orderId: orderId,
+					},
+					data: {
+						status: OrderStatus.RETURNED,
+					},
+				},
+			},
 		},
 	})
 
@@ -189,6 +201,19 @@ export async function cancelOrder(orderId: Order['id']) {
 		},
 		data: {
 			status: OrderStatus.CANCELLED,
+			products: {
+				updateMany: {
+					where: {
+						orderId: orderId,
+						status: {
+							notIn: [OrderStatus.RETURNED],
+						},
+					},
+					data: {
+						status: OrderStatus.CANCELLED,
+					},
+				},
+			},
 		},
 	})
 
@@ -212,6 +237,52 @@ export async function cancelOrder(orderId: Order['id']) {
 			})
 		)
 	)
+}
+
+export async function cancelProduct({
+	serialNo,
+	orderId,
+}: {
+	serialNo: ProductOrder['serialNo']
+	orderId: Order['id']
+}) {
+	const product = await db.productOrder.findUnique({
+		where: {
+			serialNo,
+		},
+	})
+
+	if (!product) {
+		throw new Error('Product not found')
+	}
+
+	const productPrice = product.amount
+
+	await db.order.update({
+		where: {
+			id: orderId,
+		},
+		data: {
+			payment: {
+				update: {
+					amount: {
+						decrement: productPrice,
+					},
+				},
+			},
+			products: {
+				update: {
+					where: {
+						serialNo,
+					},
+					data: {
+						status: OrderStatus.RETURNED,
+						amount: 0,
+					},
+				},
+			},
+		},
+	})
 }
 
 export async function approveOrder(orderId: Order['id']) {

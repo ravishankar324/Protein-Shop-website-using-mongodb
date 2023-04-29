@@ -13,9 +13,19 @@ import clsx from 'clsx'
 import * as React from 'react'
 import {TailwindContainer} from '~/components/TailwindContainer'
 import {useCart} from '~/context/CartContext'
-import {returnOrder, getOrders, cancelOrder} from '~/lib/order.server'
+import {
+	cancelOrder,
+	cancelProduct,
+	getOrders,
+	returnOrder,
+} from '~/lib/order.server'
 import {requireUserId} from '~/lib/session.server'
-import {formatDate, statusLookup, titleCase} from '~/utils/misc'
+import {
+	formatDate,
+	statusColorLookup,
+	statusLookup,
+	titleCase,
+} from '~/utils/misc'
 
 const dateFormatter = new Intl.DateTimeFormat('en-US')
 
@@ -60,6 +70,32 @@ export const action = async ({request}: ActionArgs) => {
 			}
 
 			return cancelOrder(orderId)
+				.then(() => json({success: true}))
+				.catch(e => json({success: false, message: e.message}, {status: 500}))
+		}
+
+		case 'cancel-product': {
+			const orderId = formData.get('orderId')?.toString()
+			const serialNo = formData.get('serialNo')?.toString()
+
+			if (!orderId) {
+				return json(
+					{success: false, message: 'Invalid order id'},
+					{status: 400}
+				)
+			}
+
+			if (!serialNo) {
+				return json(
+					{success: false, message: 'Invalid serial no'},
+					{status: 400}
+				)
+			}
+
+			return cancelProduct({
+				orderId,
+				serialNo,
+			})
 				.then(() => json({success: true}))
 				.catch(e => json({success: false, message: e.message}, {status: 500}))
 		}
@@ -171,7 +207,9 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 					<div className="flex justify-between pt-6  text-gray-900 sm:block sm:pt-0">
 						<dt className="font-semibold">Total amount</dt>
 						<dd className="flex items-center gap-2 sm:mt-1">
-							<span className="font-semibold">${order.payment?.amount}</span>
+							<span className="font-semibold">
+								${order.payment?.amount.toFixed(2)}
+							</span>
 						</dd>
 					</div>
 
@@ -271,6 +309,12 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 						>
 							Price
 						</th>
+						<th
+							scope="col"
+							className="hidden py-3 pr-8 font-normal sm:table-cell"
+						>
+							Status
+						</th>
 						<th scope="col" className="w-0 py-3 text-right font-normal"></th>
 					</tr>
 				</thead>
@@ -311,14 +355,46 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 								${product.amount}
 							</td>
 
-							<td className="whitespace-nowrap py-6 text-right font-medium">
+							<td className="hidden py-6 pr-8 sm:table-cell">
+								<Badge color={statusColorLookup[product.status]}>
+									{statusLookup[product.status]}
+								</Badge>
+							</td>
+
+							<td className="flex items-center justify-around gap-4 whitespace-nowrap py-6 font-medium">
+								{(product.status == OrderStatus.DELIVERED ||
+									product.status == OrderStatus.ORDER_PLACED ||
+									product.status == OrderStatus.PROCESSING) && (
+									<Button
+										compact
+										variant="light"
+										color="red"
+										onClick={() => {
+											returnOrderFetcher.submit(
+												{
+													intent: 'cancel-product',
+													orderId: order.id,
+													serialNo: product.serialNo,
+												},
+												{
+													method: 'post',
+													replace: true,
+												}
+											)
+										}}
+									>
+										{order.status === OrderStatus.DELIVERED
+											? 'Return'
+											: 'Cancel'}
+									</Button>
+								)}
+
 								<Anchor
 									component={Link}
 									to={`/product/${product.product.slug}`}
 									size="sm"
 								>
 									View
-									<span className="sr-only">, {product.product.name}</span>
 								</Anchor>
 							</td>
 						</tr>
