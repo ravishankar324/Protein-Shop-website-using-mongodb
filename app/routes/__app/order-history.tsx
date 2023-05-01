@@ -357,8 +357,12 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 
 							<td className="hidden py-6 pr-8 sm:table-cell">
 								<Badge color={statusColorLookup[product.status]}>
-									{product.status === OrderStatus.RETURNED &&
-									order.status !== OrderStatus.DELIVERED
+									{order.status === OrderStatus.CANCELLED
+										? 'Cancelled'
+										: order.status === OrderStatus.RETURNED
+										? 'Returned'
+										: order.status !== OrderStatus.DELIVERED &&
+										  product.status === OrderStatus.RETURNED
 										? 'Cancelled'
 										: statusLookup[product.status]}
 								</Badge>

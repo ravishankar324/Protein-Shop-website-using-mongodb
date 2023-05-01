@@ -170,7 +170,7 @@ export default function ManageOrders() {
 															{new Date(order.createdAt).toLocaleString()}
 														</td>
 														<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-															${order.payment?.amount}
+															${Math.max(0, order.payment?.amount || 0)}
 														</td>
 														<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 															<Badge
