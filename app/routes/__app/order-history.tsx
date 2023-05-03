@@ -309,12 +309,12 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 						>
 							Price
 						</th>
-						<th
+						{/* <th
 							scope="col"
 							className="hidden py-3 pr-8 font-normal sm:table-cell"
 						>
 							Status
-						</th>
+						</th> */}
 						<th scope="col" className="w-0 py-3 text-right font-normal"></th>
 					</tr>
 				</thead>
@@ -355,11 +355,11 @@ function Order({order}: {order: LoaderData['orders'][number]}) {
 								${product.amount}
 							</td>
 
-							<td className="hidden py-6 pr-8 sm:table-cell">
+							{/* <td className="hidden py-6 pr-8 sm:table-cell">
 								<Badge color={statusColorLookup[product.status]}>
 									{statusLookup[product.status]}
 								</Badge>
-							</td>
+							</td> */}
 
 							<td className="flex items-center justify-around gap-4 whitespace-nowrap py-6 font-medium">
 								{(product.status == OrderStatus.DELIVERED ||
