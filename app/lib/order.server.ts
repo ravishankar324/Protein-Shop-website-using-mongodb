@@ -292,6 +292,22 @@ export async function approveOrder(orderId: Order['id']) {
 		},
 		data: {
 			status: OrderStatus.ORDER_PLACED,
+			products: {
+				updateMany: {
+					where: {
+						status: {
+							notIn: [
+								OrderStatus.RETURNED,
+								OrderStatus.CANCELLED,
+								OrderStatus.DELIVERED,
+							],
+						},
+					},
+					data: {
+						status: OrderStatus.ORDER_PLACED,
+					},
+				},
+			},
 		},
 	})
 }
@@ -303,6 +319,18 @@ export async function completeOrder(orderId: Order['id']) {
 		},
 		data: {
 			status: OrderStatus.DELIVERED,
+			products: {
+				updateMany: {
+					where: {
+						status: {
+							notIn: [OrderStatus.RETURNED, OrderStatus.CANCELLED],
+						},
+					},
+					data: {
+						status: OrderStatus.DELIVERED,
+					},
+				},
+			},
 		},
 	})
 }
